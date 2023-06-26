@@ -21,12 +21,24 @@ struct TimeRangeValue<'a> {
     unit: TimeRangeValueUnit,
 }
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct TimeRange<'a> {
     #[serde(rename = "type")]
     kind: TimeRangeKind,
     value: TimeRangeValue<'a>,
+}
+
+impl<'a> Default for TimeRange<'a> {
+    fn default() -> Self {
+        Self {
+            kind: TimeRangeKind::Relative,
+            value: TimeRangeValue {
+                amount: "24",
+                unit: TimeRangeValueUnit::Hour,
+            },
+        }
+    }
 }
 
 #[derive(Serialize, Debug)]
@@ -58,7 +70,28 @@ impl<'a> QueryBuilder<'a> {
         Query {
             web_client: self.web_client,
             detailed: self.detailed,
-            filters: self.filters,
+            filters: if self.filters.is_empty() {
+                // set default
+                Vec::from([
+                    HashMap::from([
+                        ("name", "timeRange.type"),
+                        ("operator", "="),
+                        ("value", "ALERT_OPENED"),
+                    ]),
+                    HashMap::from([
+                        ("name", "alert.status"),
+                        ("operator", "="),
+                        ("value", "open"),
+                    ]),
+                    HashMap::from([
+                        ("name", "policy.severity"),
+                        ("operator", "="),
+                        ("value", "high"),
+                    ]),
+                ])
+            } else {
+                self.filters
+            },
             time_range: self.time_range,
         }
     }

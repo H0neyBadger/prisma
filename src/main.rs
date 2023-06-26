@@ -24,9 +24,6 @@ async fn main() {
         .await
         .expect("Login failed, Unable to retrieve token from access key");
     let query = Query::builder()
-        .add_filter("timeRange.type", "=", "ALERT_OPENED")
-        .add_filter("alert.status", "=", "open")
-        .add_filter("policy.severity", "=", "high")
         .time_range(TimeRangeKind::Relative, TimeRangeValueUnit::Hour, "72000")
         .build();
     let alert = alert::Alert::new(&session);
