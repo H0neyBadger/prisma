@@ -1,94 +1,103 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum TimeRangeKind {
     #[default]
     Relative,
 }
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum TimeRangeValueUnit {
     #[default]
     Hour,
 }
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-struct TimeRangeValue<'a> {
-    amount: &'a str,
+struct TimeRangeValue {
+    amount: String,
     unit: TimeRangeValueUnit,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct TimeRange<'a> {
+struct TimeRange {
     #[serde(rename = "type")]
     kind: TimeRangeKind,
-    value: TimeRangeValue<'a>,
+    value: TimeRangeValue,
 }
 
-impl<'a> Default for TimeRange<'a> {
+impl Default for TimeRange {
     fn default() -> Self {
         Self {
             kind: TimeRangeKind::Relative,
             value: TimeRangeValue {
-                amount: "24",
+                amount: String::from("24"),
                 unit: TimeRangeValueUnit::Hour,
             },
         }
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Query<'a> {
+pub struct Query {
     web_client: bool,
     detailed: bool,
-    filters: Vec<HashMap<&'a str, &'a str>>,
-    time_range: TimeRange<'a>,
+    filters: Vec<HashMap<String, String>>,
+    time_range: TimeRange,
 }
 
-impl<'a> Query<'a> {
-    pub fn builder() -> QueryBuilder<'a> {
+impl Query {
+    pub fn builder() -> QueryBuilder {
         QueryBuilder::default()
     }
 }
-
+impl Default for Query {
+    fn default() -> Self {
+        Self {
+            web_client: false,
+            detailed: false,
+            time_range: Default::default(),
+            filters: Vec::from([
+                HashMap::from([
+                    (String::from("name"), String::from("timeRange.type")),
+                    (String::from("operator"), String::from("=")),
+                    (String::from("value"), String::from("ALERT_OPENED")),
+                ]),
+                HashMap::from([
+                    (String::from("name"), String::from("alert.status")),
+                    (String::from("operator"), String::from("=")),
+                    (String::from("value"), String::from("open")),
+                ]),
+                HashMap::from([
+                    (String::from("name"), String::from("policy.severity")),
+                    (String::from("operator"), String::from("=")),
+                    (String::from("value"), String::from("high")),
+                ]),
+            ]),
+        }
+    }
+}
 #[derive(Default)]
-pub struct QueryBuilder<'a> {
+pub struct QueryBuilder {
     web_client: bool,
     detailed: bool,
-    filters: Vec<HashMap<&'a str, &'a str>>,
-    time_range: TimeRange<'a>,
+    filters: Vec<HashMap<String, String>>,
+    time_range: TimeRange,
 }
 
 #[allow(dead_code)]
-impl<'a> QueryBuilder<'a> {
-    pub fn build(self) -> Query<'a> {
+impl QueryBuilder {
+    pub fn build(self) -> Query {
+        let default = Query::default();
         Query {
             web_client: self.web_client,
             detailed: self.detailed,
             filters: if self.filters.is_empty() {
-                // set default
-                Vec::from([
-                    HashMap::from([
-                        ("name", "timeRange.type"),
-                        ("operator", "="),
-                        ("value", "ALERT_OPENED"),
-                    ]),
-                    HashMap::from([
-                        ("name", "alert.status"),
-                        ("operator", "="),
-                        ("value", "open"),
-                    ]),
-                    HashMap::from([
-                        ("name", "policy.severity"),
-                        ("operator", "="),
-                        ("value", "high"),
-                    ]),
-                ])
+                default.filters
             } else {
                 self.filters
             },
@@ -106,11 +115,11 @@ impl<'a> QueryBuilder<'a> {
         self
     }
 
-    pub fn add_filter(mut self, name: &'a str, operator: &'a str, value: &'a str) -> Self {
+    pub fn add_filter(mut self, name: String, operator: String, value: String) -> Self {
         self.filters.push(HashMap::from([
-            ("name", name),
-            ("operator", operator),
-            ("value", value),
+            (String::from("name"), name),
+            (String::from("operator"), operator),
+            (String::from("value"), value),
         ]));
         self
     }
@@ -119,7 +128,7 @@ impl<'a> QueryBuilder<'a> {
         mut self,
         kind: TimeRangeKind,
         unit: TimeRangeValueUnit,
-        value: &'a str,
+        value: String,
     ) -> Self {
         self.time_range = TimeRange {
             kind: kind,
