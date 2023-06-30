@@ -3,7 +3,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write};
 
-use super::alert::GetAlertCountsGroupedByPolicyResponse;
 use super::filter::Query;
 
 const PATH: &'static str = "config.json";
@@ -12,7 +11,7 @@ const PATH: &'static str = "config.json";
 pub struct Config {
     // token: &'a str,
     pub query: Query,
-    pub state: GetAlertCountsGroupedByPolicyResponse,
+    pub alerts: Vec<String>,
 }
 
 impl Config {
@@ -39,7 +38,7 @@ impl Config {
 #[derive(Default)]
 pub struct ConfigBuilder {
     query: Query,
-    state: GetAlertCountsGroupedByPolicyResponse,
+    alerts: Vec<String>,
 }
 
 impl ConfigBuilder {
@@ -48,15 +47,15 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn state(mut self, value: GetAlertCountsGroupedByPolicyResponse) -> Self {
-        self.state = value;
+    pub fn add_alert(mut self, value: String) -> Self {
+        self.alerts.push(value);
         self
     }
 
     pub fn build(self) -> Config {
         Config {
             query: self.query,
-            state: self.state,
+            alerts: self.alerts,
         }
     }
 }

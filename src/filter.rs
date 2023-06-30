@@ -115,11 +115,11 @@ impl QueryBuilder {
         self
     }
 
-    pub fn add_filter(mut self, name: String, operator: String, value: String) -> Self {
+    pub fn add_filter(mut self, name: &str, operator: &str, value: &str) -> Self {
         self.filters.push(HashMap::from([
-            (String::from("name"), name),
-            (String::from("operator"), operator),
-            (String::from("value"), value),
+            ("name".to_string(), name.to_string()),
+            ("operator".to_string(), operator.to_string()),
+            ("value".to_string(), value.to_string()),
         ]));
         self
     }
