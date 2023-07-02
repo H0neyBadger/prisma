@@ -1,5 +1,5 @@
 // use serde_json::Value;
-use notify_rust::{Hint, Notification, Timeout};
+use notify_rust::{Notification, Timeout};
 use session::Session;
 use std::env;
 
@@ -10,13 +10,17 @@ mod session;
 
 use alert::{ListV2AlertResponse, V2AlertResponseItem};
 use config::Config;
-use filter::{Query, TimeRangeKind, TimeRangeValueUnit};
+// use filter::{Query, TimeRangeKind, TimeRangeValueUnit};
 
 #[tokio::main]
 async fn main() {
-    let api_endpoint = env::var("PRISMA_API_ENDPOINT").unwrap();
-    let access_key = env::var("PRISMA_ACCESS_KEY").unwrap();
-    let secret_key = env::var("PRISMA_SECRET_KEY").unwrap();
+    let api_endpoint =
+        env::var("PRISMA_API_ENDPOINT").expect("Env var PRISMA_API_ENDPOINT is not defined");
+    let access_key =
+        env::var("PRISMA_ACCESS_KEY").expect("Env var PRISMA_ACCESS_KEY is not defined");
+    let secret_key =
+        env::var("PRISMA_SECRET_KEY").expect("Env var PRISMA_SECRET_KEY is not defined");
+
     let config = match Config::load() {
         Ok(config) => config,
         Err(err)
@@ -39,23 +43,23 @@ async fn main() {
         .await
         .expect("Login failed, Unable to retrieve token from access key");
     let query = config.query;
-    let query = Query::builder()
-        .time_range(
-            TimeRangeKind::Relative,
-            TimeRangeValueUnit::Hour,
-            String::from("72000"),
-        )
-        .add_filter("timeRange.type", "=", "ALERT_OPENED")
-        .add_filter("alert.status", "=", "open")
-        .add_filter("policy.severity", "=", "high")
-        .add_filter("policy.type", "=", "anomaly")
-        .add_filter("policy.type", "=", "attack_path")
-        .add_filter("policy.type", "=", "audit_event")
-        .add_filter("policy.type", "=", "network")
-        .add_filter("policy.type", "=", "config")
-        .add_filter("policy.type", "=", "workload_vulnerability")
-        .add_filter("policy.type", "=", "workload_incident")
-        .build();
+    // let query = Query::builder()
+    //     .time_range(
+    //         TimeRangeKind::Relative,
+    //         TimeRangeValueUnit::Hour,
+    //         String::from("72000"),
+    //     )
+    //     .add_filter("timeRange.type", "=", "ALERT_OPENED")
+    //     .add_filter("alert.status", "=", "open")
+    //     .add_filter("policy.severity", "=", "high")
+    //     .add_filter("policy.type", "=", "anomaly")
+    //     .add_filter("policy.type", "=", "attack_path")
+    //     .add_filter("policy.type", "=", "audit_event")
+    //     .add_filter("policy.type", "=", "network")
+    //     .add_filter("policy.type", "=", "config")
+    //     .add_filter("policy.type", "=", "workload_vulnerability")
+    //     .add_filter("policy.type", "=", "workload_incident")
+    //     .build();
     let alert = alert::Alert::new(&session);
     // let values = alert.list_v2_alert::<serde_json::Value, Query>(&query).await;
     // dbg!(&values);
@@ -85,5 +89,5 @@ async fn main() {
             serde_json::to_string_pretty(&new_alerts).unwrap()
         );
     }
-    config_builder.build().save();
+    config_builder.build().save().unwrap();
 }

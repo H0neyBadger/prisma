@@ -41,7 +41,7 @@ impl Default for TimeRange {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Query {
     web_client: bool,
@@ -55,32 +55,7 @@ impl Query {
         QueryBuilder::default()
     }
 }
-impl Default for Query {
-    fn default() -> Self {
-        Self {
-            web_client: false,
-            detailed: false,
-            time_range: Default::default(),
-            filters: Vec::from([
-                HashMap::from([
-                    (String::from("name"), String::from("timeRange.type")),
-                    (String::from("operator"), String::from("=")),
-                    (String::from("value"), String::from("ALERT_OPENED")),
-                ]),
-                HashMap::from([
-                    (String::from("name"), String::from("alert.status")),
-                    (String::from("operator"), String::from("=")),
-                    (String::from("value"), String::from("open")),
-                ]),
-                HashMap::from([
-                    (String::from("name"), String::from("policy.severity")),
-                    (String::from("operator"), String::from("=")),
-                    (String::from("value"), String::from("high")),
-                ]),
-            ]),
-        }
-    }
-}
+
 #[derive(Default)]
 pub struct QueryBuilder {
     web_client: bool,
