@@ -45,7 +45,7 @@ pub struct GetAlertCountsGroupedByPolicyResponseItem {
 #[serde(rename_all = "camelCase")]
 pub struct GetAlertCountsGroupedByPolicyResponseItemPolicy {
     policy_id: String,
-    severity: GetAlertCountsGroupedByPolicyResponseItemPolicySeverity,
+    severity: PolicySeverity,
     name: String,
     description: String,
     recommendation: String,
@@ -59,12 +59,36 @@ pub struct GetAlertCountsGroupedByPolicyResponseItemPolicy {
     remediable: bool,
     remediation: Option<Value>,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub enum GetAlertCountsGroupedByPolicyResponseItemPolicySeverity {
+pub enum PolicySeverity {
+    Critical,
     High,
     Medium,
     Low,
+    Informational,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum AlertStatus {
+    Open,
+    Dismissed,
+    Snoozed,
+    Resolved,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum CloudType {
+    All,
+    Aws,
+    Azure,
+    Gcp,
+    AlibabaCloud,
+    Oci,
+    Ibm,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -88,74 +112,32 @@ pub struct ListV2AlertResponse {
 #[serde(rename_all = "camelCase")]
 pub struct V2AlertResponseItem {
     pub id: String,
-    status: String,
-    reason: String,
-    first_seen: u64,
-    last_seen: u64,
-    alert_time: u64,
-    policy_id: String,
+    pub status: String,
+    pub reason: String,
+    pub first_seen: u64,
+    pub last_seen: u64,
+    pub alert_time: u64,
+    pub policy_id: String,
     // todo
-    resource: V2AlertResponseItemResource,
+    pub resource: V2AlertResponseItemResource,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct V2AlertResponseItemResource {
-    rrn: Option<String>,
-    id: String,
-    account: String,
-    account_id: String,
-    region: String,
-    region_id: String,
-    // resource_type: String,
-    resource_api_name: String,
-    cloud_service_name: String,
-    url: Option<String>,
+    pub rrn: Option<String>,
+    pub id: String,
+    pub name: String,
+    pub account: String,
+    pub account_id: String,
+    pub region: String,
+    pub region_id: String,
+    pub resource_type: String,
+    pub resource_api_name: String,
+    pub cloud_service_name: String,
+    pub url: Option<String>,
+    pub data: Value,
+    pub cloud_type: CloudType,
     #[serde(flatten)]
-    data: V2AlertResponseItemResourceKind,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "UPPERCASE")]
-#[serde(tag = "resourceType")]
-pub enum V2AlertResponseItemResourceKind {
-    Instance(V2AlertResponseItemResourceInstanceData),
-    #[serde(other)]
-    Other,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct V2AlertResponseItemResourceDataTag {
-    key: String,
-    value: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct V2AlertResponseItemResourceInstanceData {
-    tags: Option<Vec<V2AlertResponseItemResourceDataTag>>,
-    state: V2AlertResponseItemResourceInstanceDataState,
-    vpc_id: String,
-    image_id: String,
-    subnet_id: String,
-    instance_id: String,
-    private_dns_name: String,
-    private_ip_address: String,
-    iam_instance_profile: V2AlertResponseItemResourceInstanceDataIamIstanceProfile,
-    cloud_type: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct V2AlertResponseItemResourceInstanceDataState {
-    code: u16,
-    name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct V2AlertResponseItemResourceInstanceDataIamIstanceProfile {
-    id: String,
-    arn: String,
+    pub other: Value,
 }

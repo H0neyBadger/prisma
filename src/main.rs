@@ -73,8 +73,24 @@ async fn main() {
         if !config.alerts.iter().any(|v| v == &item.id) {
             // new alerts
             Notification::new()
-                .summary("Prisma cloud Alert")
-                .body(format!("{}", serde_json::to_string_pretty(&item).unwrap()).as_str())
+                .summary(
+                    format!(
+                        "{} - {} ({})",
+                        item.reason, item.id, item.resource.resource_type,
+                    )
+                    .as_str(),
+                )
+                .body(
+                    format!(
+                        "{} {}",
+                        item.resource.account_id,
+                        item.resource
+                            .url
+                            .as_deref()
+                            .unwrap_or(item.resource.region_id.as_str())
+                    )
+                    .as_str(),
+                )
                 .icon("alert")
                 .appname("prisma-cloud")
                 .timeout(Timeout::Never) // this however is
