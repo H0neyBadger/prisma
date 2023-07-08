@@ -50,12 +50,6 @@ pub struct Query {
     time_range: TimeRange,
 }
 
-impl Query {
-    pub fn builder() -> QueryBuilder {
-        QueryBuilder::default()
-    }
-}
-
 #[derive(Default)]
 pub struct QueryBuilder {
     web_client: bool,
