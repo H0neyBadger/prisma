@@ -33,13 +33,16 @@ async fn main() {
         }
         Err(err) => panic!("{err}"),
     };
+
     let session = Session::new(
         api_endpoint.as_str(),
         access_key.as_str(),
         secret_key.as_str(),
+        config.token,
     );
+
     let session = session
-        .login()
+        .login_or_refresh()
         .await
         .expect("Login failed, Unable to retrieve token from access key");
     let query = config.query;
@@ -67,7 +70,8 @@ async fn main() {
     println!("{}", serde_json::to_string_pretty(&values).unwrap());
 
     let mut new_alerts: Vec<V2AlertResponseItem> = Vec::new();
-    let mut config_builder = Config::builder().query(query);
+    let mut config_builder = Config::builder().query(query).token(session.token);
+
     for item in values.items.into_iter() {
         config_builder = config_builder.add_alert(item.id.clone());
         if !config.alerts.iter().any(|v| v == &item.id) {

@@ -9,7 +9,7 @@ const PATH: &'static str = "config.json";
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
-    // token: &'a str,
+    pub token: Option<String>,
     pub query: Query,
     pub alerts: Vec<String>,
 }
@@ -37,6 +37,7 @@ impl Config {
 
 #[derive(Default)]
 pub struct ConfigBuilder {
+    token: Option<String>,
     query: Query,
     alerts: Vec<String>,
 }
@@ -52,8 +53,14 @@ impl ConfigBuilder {
         self
     }
 
+    pub fn token(mut self, value: Option<String>) -> Self {
+        self.token = value;
+        self
+    }
+
     pub fn build(self) -> Config {
         Config {
+            token: self.token,
             query: self.query,
             alerts: self.alerts,
         }
