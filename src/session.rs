@@ -50,7 +50,7 @@ impl<'a> Session<'a> {
         let url = format!("{}/{uri}", self.api_endpoint);
         let res = self
             .client
-            .post(url)
+            .get(url)
             .header("x-redlock-auth", self.token.as_deref().unwrap())
             .query(query)
             .send()

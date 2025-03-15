@@ -1,16 +1,21 @@
 // use serde_json::Value;
+use std::collections::HashMap;
+
 use notify_rust::{Notification, Timeout};
 use session::Session;
 use std::env;
 
+mod policy;
 mod alert;
 mod config;
 mod filter;
 mod session;
 
+use policy::{V2PolicyResponseItem};
 use alert::{ListV2AlertResponse, V2AlertResponseItem};
 use config::Config;
 // use filter::{Query, TimeRangeKind, TimeRangeValueUnit};
+//
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +51,14 @@ async fn main() {
         .await
         .expect("Login failed, Unable to retrieve token from access key");
     let query = config.query;
+    let policy = policy::Policy::new(&session);
     let alert = alert::Alert::new(&session);
+
+    let policies: Vec<V2PolicyResponseItem> = policy.list_v2_policy().await.unwrap();
+    let policies: HashMap<String, String> = policies
+        .into_iter()
+        .map(|v| (v.policy_id, v.name))
+        .collect();
 
     let values: ListV2AlertResponse = alert.list_v2_alert(&query).await.unwrap();
     println!("{}", serde_json::to_string_pretty(&values).unwrap());
@@ -68,8 +80,10 @@ async fn main() {
                 )
                 .body(
                     format!(
-                        "{} {}",
+                        "{}\n{} {} {}",
+                        policies.get(&item.policy_id).unwrap_or(&item.policy_id),
                         item.resource.account_id,
+                        item.resource.name,
                         item.resource
                             .url
                             .as_deref()
